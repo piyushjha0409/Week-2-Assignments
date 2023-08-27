@@ -39,11 +39,61 @@
 
   Testing the server - run `npm run test-todoServer` command in terminal
  */
-const express = require('express');
-const bodyParser = require('body-parser');
+var express = require('express');
+var fs = require('fs')
+var bodyParser = require('body-parser');
+const { v4: uuidv4 } = require('uuid');
 
 const app = express();
 
+
 app.use(bodyParser.json());
+const PORT = 3000;
+
+//defining the home route 
+app.get('/', (req, res)=>{
+  console.log("Hello world! this is your express server!")
+})
+
+app.listen(PORT, ()=> {
+  console.log(`The server is ruuning in the port ${PORT}`)
+})
+
+//here all the data will be stored
+const dataStore = []
+
+
+//fetching all the todos from the array
+app.get('/todos', (req, res)=> {
+  res.status(200).json(dataStore);
+}) 
+
+//fetching the individual todo 
+app.get('/todos/:id', (req, res)=> {
+   const todoID = parseInt(req.params.id);
+   
+   const foundTodo = dataStore.find(todo => todo.id === todoID)
+
+   if(!foundTodo){
+    return res.status(200).json({ message: "TODO is not found!"})
+   }
+   res.json(foundTodo);
+});
+
+
+//addding the todos 
+app.post('/todos', (req, res)=> {
+  const newTodo = {
+    id: uuidv4(),
+    title: req.body.title,
+    desc: req.body.desc
+  }
+  console.log(newTodo.id)
+  //adding the todo into the array database
+  dataStore.push(newTodo)
+  return res.status(201).json({message: "Added succesfully"})
+})
+
+
 
 module.exports = app;
