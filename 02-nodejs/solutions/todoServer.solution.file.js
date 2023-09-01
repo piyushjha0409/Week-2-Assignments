@@ -24,7 +24,7 @@ function removeAtIndex(arr, index) {
 app.get('/todos', (req, res) => {
   fs.readFile("todos.json", "utf8", (err, data) => {
     if (err) throw err;
-    res.json(JSON.parse(data));
+    const todos = JSON.parse(data);
   });
 });
 
@@ -73,7 +73,7 @@ app.put('/todos/:id', (req, res) => {
       };
       todos[todoIndex] = updatedTodo;
       fs.writeFile("todos.json", JSON.stringify(todos), (err) => {
-        if (err) throw err;
+        if (err) throw err;c
         res.status(200).json(updatedTodo);
       });
     }

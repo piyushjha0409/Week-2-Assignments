@@ -19,7 +19,42 @@
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
+
+//Creating an instance of the express
 const app = express();
+
+
+//this is the route for accessing all the file in this particular directory
+
+app.get('/file/', (req, res)=>{
+  
+const filepath = path.join(__dirname, './files/');
+fs.readdir(filepath, (err, files)=>{
+  if(err){
+   res.status(500).json({error: "Internal Server Error"})
+  }
+  res.json(files)
+})
+})
+
+//this is the api for extracting the content for the given file name
+app.get("/file/:filename", (req, res)=> {
+  const filepath = path.join(__dirname, './files/', req.params.filename);
+
+  fs.readFile(filepath, 'utf-8', (err, data)=> {
+    if(err){
+      return res.status(404).json({error: "File not found"})
+    }
+
+    res.send(data);
+  })
+})
+
+app.all("*", (req, res)=> {
+  res.status(404).send("Not found!")
+});
+
+
 
 
 module.exports = app;

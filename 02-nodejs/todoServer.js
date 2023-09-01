@@ -39,10 +39,10 @@
 
   Testing the server - run `npm run test-todoServer` command in terminal
  */
-var express = require('express');
+const express = require('express')
 var fs = require('fs')
 var bodyParser = require('body-parser');
-const { v4: uuidv4 } = require('uuid');
+const path = require('path');
 
 const app = express();
 
@@ -59,31 +59,25 @@ app.listen(PORT, ()=> {
   console.log(`The server is ruuning in the port ${PORT}`)
 })
 
-const dataFilePath = path.join(__dirname, 'todo.json')
+// function for finding the index 
+const findIndex = (arr, id) => {
+  for(let i=0; i<arr.length; i++){
+    if(arr[i] !== index){
+      return i;
+    }
+  }
+}
 //here all the data will be stored
 const dataStore = []
 
-//function for loading the data and saving it into the file 
-(async () => {
-  try{
-     const fileData = await fs.readFile(dataFilePath, 'utf-8');
-     dataStore = JSON.parse(fileData);
-  }catch(err){
-    console.error(err);
-  }
-}) 
 
-//save data to the file 
-async function saveDataFile(){
- try{
-    await fs.writeFile(dataFilePath, JSON.stringify(dataStore, null, 2), 'utf-8');
-    console.log("Saved data successfully!")
- }catch(err){
-  console.error(err);
- }
-}
 //fetching all the todos from the array
 app.get('/todos', (req, res)=> {
+  fs.readFile('todo.json', 'utf-8', (err, data) => {
+    if(err) throw err;
+    const todos = JSON.parse(data);
+    const todosIndex = findIndex(todos, parseInt(req.params.id))
+  })
   res.status(200).json(dataStore);
 }) 
 
@@ -103,7 +97,7 @@ app.get('/todos/:id', (req, res)=> {
 //addding the todos 
 app.post('/todos', (req, res)=> {
   const newTodo = {
-    id: uuidv4(),
+    id: Math.floor(Math.random() * 1000),
     title: req.body.title,
     desc: req.body.desc
   }
@@ -116,22 +110,25 @@ app.post('/todos', (req, res)=> {
 
 //api for updating the todo desc
 app.put("/todos/:id", (req, res)=> {
-   const id = parseInt(req.params.id);
-   const updatedTodo = {
-    id: id,
-    title: req.body.title,
-    desc: req.body.desc
-   }
-
-   let index = dataStore.findIndex((todo)=> todo.id === id);
-
-   if(index != 1){
-     dataStore[index] = {...dataStore[index], ...updatedTodo};
-     saveDataFile()
-     res.status(200).json({message: "Successfully updated!" })
-   }else{
-    res.status(404).send("Todo Item not updated")
-   }
+   //read the file of todo.json 
+   fs.readFile('todo.json', 'utf-8', (err, res)=> {
+    if(err){
+      throw err;
+    }
+    const todos = JSON.parse(res);
+    const todosIndex = findIndex(todos, parseInt(req.params.id))
+    if(todosIndex === -1 ){
+      res.status(404).send();
+    }else{
+      const updatedTodo = {
+        id: todos[req.params.id],
+        title: req.body.title,
+        desc: req.body.desc
+      };
+      //afterall we are manipulating the array
+      todos[todoIndex] = updatedTodo
+    }
+   })
 })
 
 
