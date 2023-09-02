@@ -29,9 +29,86 @@
   Testing the server - run `npm run test-authenticationServer` command in terminal
  */
 
+  //additional task print this array
+
+
 const express = require("express")
 const PORT = 3000;
 const app = express();
+const {v4: uuidv4} = require('uuid')
+
+
+//database should be the array
+const users = []
 // write your logic here, DONT WRITE app.listen(3000) when you're running tests, the tests will automatically start the server
+
+app.use(express.json());
+
+app.post("/signup", (req, res)=> {
+  const user = {username, password, firstname, lastname} = req.body;
+
+  const existingUser = users.find(u=> u.username === user.username);
+
+  if(existingUser){
+    //user already exists
+    return res.status(400).json({msg: "User already exists!"})
+  }
+  const newUser = {
+    id: uuidv4(),
+    username, 
+    password,
+    firstname, 
+    lastname
+  }
+  //otherwise push the new user to the array 
+  users.push(newUser);
+  
+  res.status(201).send(newUser);
+})
+
+
+//login route
+app.post("/login", (req, res)=> {
+  const {username, password} = req.body;
+
+  const isValid = users.find(u => u.username === username && u.password === password);
+ 
+  if(!isValid){
+    return res.status(401).json({mesg: "Invalid Credentials!"})
+  }  
+  
+  const userDetails = {
+    id: users.id,
+    firstname: users.firstname,
+    lastname: users.lastname
+  }
+
+  res.send(userDetails)
+})
+
+//api for getting the data of the users from the array 
+app.get("/data", (req, res)=> {
+   
+  //make an empty list of the users data where all the users will be showed
+  const usersData = []
+   const data = users.forEach((user)=>{
+      let userDetails = {
+        id: user.id,
+        firstname: user.firstname,
+        lastname: user.lastname,
+      }
+      //push this object to the usersData
+      usersData.push(userDetails)
+   })
+   res.send({usersData})
+})
+
+app.listen((PORT)=>{
+   console.log(`The app is running on the port: ${PORT}`)
+})
+
+
+
+
 
 module.exports = app;
